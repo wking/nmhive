@@ -13,6 +13,38 @@ app = flask.Flask(__name__)
 flask_cors.CORS(app)
 
 
+_TAGS = {}
+
+
+@app.route('/mid/<message_id>', methods=['GET', 'POST'])
+def message_id_tags(message_id):
+    if flask.request.method == 'POST':
+        tags = _TAGS.get(message_id, set())
+        new_tags = tags.copy()
+        for change in flask.request.get_json():
+            if change.startswith('+'):
+                new_tags.add(change[1:])
+            elif change.startswith('-'):
+                try:
+                    new_tags.remove(change[1:])
+                except KeyError:
+                    return flask.Response(status=400)
+            else:
+                return flask.Response(status=400)
+        _TAGS[message_id] = new_tags
+        return flask.Response(
+            response=json.dumps(sorted(new_tags)),
+            mimetype='application/json')
+    elif flask.request.method == 'GET':
+        try:
+            tags = _TAGS[message_id]
+        except KeyError:
+            return flask.Response(status=404)
+        return flask.Response(
+            response=json.dumps(sorted(tags)),
+            mimetype='application/json')
+
+
 @app.route('/gmane/<group>/<int:article>', methods=['GET'])
 def gmane_message_id(group, article):
     url = 'http://download.gmane.org/{}/{}/{}'.format(
