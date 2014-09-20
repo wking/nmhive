@@ -7,5 +7,8 @@
 	"repository": {
 		"type": "git",
 		"url": "git://github.com/wking/nmhive.git"
+	},
+	"dependencies": {
+		"dialog-polyfill": "*"
 	}
 }

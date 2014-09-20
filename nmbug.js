@@ -25,7 +25,38 @@ nmbug = {
 		request.send();
 	},
 	_edit_tags: function (message_id, tags) {
+		if (document.createElement('dialog').show) {
+			this._x_edit_tags(message_id, tags);
+		} else {
+			var _this = this;
+			var dialog_polyfill_loaded = 0;
+
+			function onload () {
+				dialog_polyfill_loaded++;
+				if (dialog_polyfill_loaded == 2) {
+					_this._x_edit_tags(message_id, tags);
+				}
+			}
+
+			var script = document.createElement('script');
+			script.type = 'text/javascript';
+			script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
+			script.onload = onload;
+			document.head.appendChild(script);
+
+			var link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
+			link.onload = onload;
+			document.head.appendChild(link);
+		}
+	},
+	_x_edit_tags: function (message_id, tags) {
 		var dialog = document.createElement('dialog');
+		if (!document.createElement('dialog').show) {
+			dialogPolyfill.registerDialog(dialog);
+		}
 
 		var content = document.createElement('p');
 		content.innerHTML = 'Edit tags for ' + message_id;
