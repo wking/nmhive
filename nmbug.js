@@ -2,7 +2,30 @@ var nmbug_server = 'http://localhost:5000';
 
 nmbug = {
 	show: function (message_id) {
-		alert(message_id);
+		this._get_tags(message_id, this._edit_tags.bind(this));
+	},
+	_get_tags: function (message_id, callback) {
+		var url = [
+			nmbug_server,
+			'mid',
+			encodeURIComponent(message_id),
+			].join('/');
+		console.log('nmbug: get tags from ' + url);
+		var request = new XMLHttpRequest();
+		request.onload = function () {
+			if (this.status == 200) {
+				var tags = JSON.parse(this.response);
+				console.log('nmbug: got tags', tags);
+				callback(message_id, tags);
+			} else {
+				throw 'Error fetching ' + url + ' (status ' + this.status + ')';
+			}
+		};
+		request.open('get', url, true);
+		request.send();
+	},
+	_edit_tags: function (message_id, tags) {
+		alert('edit ' + tags + ' for ' + message_id);
 	},
 };
 
@@ -58,7 +81,7 @@ function _check_handler(handler) {
 	console.log('nmbug: testing', handler, match);
 	if (match) {
 		console.log('nmbug: matched', handler);
-		handler.handle(nmbug.show);
+		handler.handle(nmbug.show.bind(nmbug));
 	}
 	return match;  /* break after the first match */
 }
