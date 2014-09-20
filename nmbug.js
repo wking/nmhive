@@ -25,7 +25,29 @@ nmbug = {
 		request.send();
 	},
 	_edit_tags: function (message_id, tags) {
-		alert('edit ' + tags + ' for ' + message_id);
+		var dialog = document.createElement('dialog');
+
+		var content = document.createElement('p');
+		content.innerHTML = 'Edit tags for ' + message_id;
+		dialog.appendChild(content);
+
+		var ul = document.createElement('ul');
+		dialog.appendChild(ul);
+		for (var i = 0; i < tags.length; i++) {
+			var li = document.createElement('li');
+			li.innerHTML = tags[i];
+			ul.appendChild(li);
+		}
+		var close = document.createElement('button');
+		close.innerHTML = 'Close';
+		close.onclick = function () {
+			dialog.close();
+		};
+		dialog.appendChild(close);
+
+		document.body.appendChild(dialog);
+
+		dialog.show();
 	},
 };
 
