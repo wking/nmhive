@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+
+		<script type="text/javascript">
+			function load_bookmarklet(id, source) {
+				var request = new XMLHttpRequest();
+				request.onload = function () {
+					var element = document.getElementById(id);
+					var href = 'javascript:(function () {\n' + this.responseText + '\n run();})();';
+					element.setAttribute('href', href);
+				};
+				request.open('get', source, true);
+				request.send();
+			}
+		</script>
+	</head>
+	<body onload="load_bookmarklet('nmbug', 'nmbug.js');">
+		<p>
+			This is the <a id="nmbug">nmbug</a> bookmarklet.
+		</p>
+	</body>
+</html>
