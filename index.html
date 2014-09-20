@@ -6,6 +6,7 @@
 		<script type="text/javascript">
 			function load_bookmarklet(id, source) {
 				var request = new XMLHttpRequest();
+				request.overrideMimeType('text/plain');
 				request.onload = function () {
 					var element = document.getElementById(id);
 					var href = 'javascript:(function () {\n' + this.responseText + '\n run();})();';
