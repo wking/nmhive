@@ -53,27 +53,64 @@ nmbug = {
 			this._x_edit_tags(available_tags, message_id, tags);
 		} else {
 			var _this = this;
-			var dialog_polyfill_loaded = 0;
+			var needed = [];
+
+			function basename (element) {
+				var url;
+				if (!element.tagName) {
+					return;
+				} else if (element.tagName.toLowerCase() == 'script') {
+					url = element.src;
+				} else if (element.tagName.toLowerCase() == 'link') {
+					url = element.href;
+				} else {
+					return;
+				}
+				return url.replace(/.*\//, '');
+			}
 
 			function onload () {
-				dialog_polyfill_loaded++;
-				if (dialog_polyfill_loaded == 2) {
+				var name = basename(this);
+				console.log('nmbug: loaded ' + name, this);
+				var index = needed.indexOf(name);
+				if (index !== -1) {
+					needed.splice(index, 1);
+				}
+				if (needed.length == 0) {
 					_this._x_edit_tags(available_tags, message_id, tags);
 				}
 			}
 
-			var script = document.createElement('script');
-			script.type = 'text/javascript';
-			script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
-			script.onload = onload;
-			document.head.appendChild(script);
+			function has_header (name) {
+				var nodes = document.head.childNodes;
+				for (var i = 0; i < nodes.length; i++) {
+					if (basename(nodes[i]) == name) {
+						return true;
+					}
+				}
+				return false;
+			}
 
-			var link = document.createElement('link');
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
-			link.onload = onload;
-			document.head.appendChild(link);
+			if (!has_header('dialog-polyfill.js')) {
+				needed.push('dialog-polyfill.js');
+				var script = document.createElement('script');
+				script.type = 'text/javascript';
+				script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
+				script.onload = onload;
+				console.log('nmbug: loading dialog-polyfill.js');
+				document.head.appendChild(script);
+			}
+
+			if (!has_header('dialog-polyfill.css')) {
+				needed.push('dialog-polyfill.css');
+				var link = document.createElement('link');
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
+				link.onload = onload;
+				console.log('nmbug: loading dialog-polyfill.css');
+				document.head.appendChild(link);
+			}
 		}
 	},
 	_x_edit_tags: function (available_tags, message_id, tags) {
