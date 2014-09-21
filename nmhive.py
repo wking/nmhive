@@ -16,16 +16,19 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 flask_cors.CORS(app)
 
 TAG_PREFIX = os.getenv('NMBPREFIX', 'notmuch::')
-NOTMUCH = None
-_TAGS = {}
+NOTMUCH_PATH = None
 
 
 @app.route('/tags', methods=['GET'])
 def tags():
     tags = set()
-    for t in NOTMUCH.get_all_tags():
-        if t.startswith(TAG_PREFIX):
-            tags.add(t[len(TAG_PREFIX):])
+    database = notmuch.Database(path=NOTMUCH_PATH)
+    try:
+        for t in database.get_all_tags():
+            if t.startswith(TAG_PREFIX):
+                tags.add(t[len(TAG_PREFIX):])
+    finally:
+        database.close()
     return flask.Response(
         response=json.dumps(sorted(tags)),
         mimetype='application/json')
@@ -77,7 +80,4 @@ def gmane_message_id(group, article):
 
 
 if __name__ == '__main__':
-    NOTMUCH = notmuch.Database(
-        path=None,
-        mode=notmuch.Database.MODE.READ_WRITE)
     app.run(host='0.0.0.0')
