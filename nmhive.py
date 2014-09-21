@@ -8,6 +8,7 @@ import urllib.request
 
 import flask
 import flask_cors
+import nmbug
 import notmuch
 
 
@@ -43,6 +44,7 @@ def _message_tags(message):
 @app.route('/mid/<message_id>', methods=['GET', 'POST'])
 def message_id_tags(message_id):
     if flask.request.method == 'POST':
+        changes = flask.request.get_json()
         database = notmuch.Database(
             path=NOTMUCH_PATH,
             mode=notmuch.Database.MODE.READ_WRITE)
@@ -52,7 +54,7 @@ def message_id_tags(message_id):
                 return flask.Response(status=404)
             database.begin_atomic()
             message.freeze()
-            for change in flask.request.get_json():
+            for change in changes:
                 if change.startswith('+'):
                     message.add_tag(TAG_PREFIX + change[1:])
                 elif change.startswith('-'):
@@ -64,6 +66,8 @@ def message_id_tags(message_id):
             tags = _message_tags(message=message)
         finally:
             database.close()
+        nmbug.commit(message='nmhive: {} {}'.format(
+            message_id, ' '.join(changes)))
     elif flask.request.method == 'GET':
         database = notmuch.Database(path=NOTMUCH_PATH)
         try:
