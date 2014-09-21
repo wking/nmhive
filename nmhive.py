@@ -34,33 +34,48 @@ def tags():
         mimetype='application/json')
 
 
+def _message_tags(message):
+    return sorted(
+        tag[len(TAG_PREFIX):] for tag in message.get_tags()
+        if tag.startswith(TAG_PREFIX))
+
+
 @app.route('/mid/<message_id>', methods=['GET', 'POST'])
 def message_id_tags(message_id):
     if flask.request.method == 'POST':
-        tags = _TAGS.get(message_id, set())
-        new_tags = tags.copy()
-        for change in flask.request.get_json():
-            if change.startswith('+'):
-                new_tags.add(change[1:])
-            elif change.startswith('-'):
-                try:
-                    new_tags.remove(change[1:])
-                except KeyError:
-                    return flask.Response(status=400)
-            else:
-                return flask.Response(status=400)
-        _TAGS[message_id] = new_tags
-        return flask.Response(
-            response=json.dumps(sorted(new_tags)),
-            mimetype='application/json')
-    elif flask.request.method == 'GET':
+        database = notmuch.Database(
+            path=NOTMUCH_PATH,
+            mode=notmuch.Database.MODE.READ_WRITE)
         try:
-            tags = _TAGS[message_id]
-        except KeyError:
-            return flask.Response(status=404)
-        return flask.Response(
-            response=json.dumps(sorted(tags)),
-            mimetype='application/json')
+            message = database.find_message(message_id)
+            if not(message):
+                return flask.Response(status=404)
+            database.begin_atomic()
+            message.freeze()
+            for change in flask.request.get_json():
+                if change.startswith('+'):
+                    message.add_tag(TAG_PREFIX + change[1:])
+                elif change.startswith('-'):
+                    message.remove_tag(TAG_PREFIX + change[1:])
+                else:
+                    return flask.Response(status=400)
+            message.thaw()
+            database.end_atomic()
+            tags = _message_tags(message=message)
+        finally:
+            database.close()
+    elif flask.request.method == 'GET':
+        database = notmuch.Database(path=NOTMUCH_PATH)
+        try:
+            message = database.find_message(message_id)
+            if not(message):
+                return flask.Response(status=404)
+            tags = _message_tags(message=message)
+        finally:
+            database.close()
+    return flask.Response(
+        response=json.dumps(tags),
+        mimetype='application/json')
 
 
 @app.route('/gmane/<group>/<int:article>', methods=['GET'])
