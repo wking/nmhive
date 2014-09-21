@@ -95,9 +95,12 @@ nmbug = {
 		for (var i = 0; i < available_tags.length; i++) {
 			var li = document.createElement('li');
 			li.innerHTML = available_tags[i];
+			li.style.cursor = 'pointer';
 			if (tags.indexOf(available_tags[i]) >= 0) {
 				li.style.backgroundColor = 'lime';
 			}
+			li.onclick = this._toggle_tag.bind(
+				this, message_id, available_tags[i], li);
 			ul.appendChild(li);
 		}
 		var close = document.createElement('button');
@@ -110,6 +113,9 @@ nmbug = {
 		document.body.appendChild(dialog);
 
 		dialog.show();
+	},
+	_toggle_tag: function (message_id, tag, li) {
+		alert('toggle ' + tag + ' for ' + message_id);
 	},
 };
 
