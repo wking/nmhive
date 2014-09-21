@@ -1,12 +1,15 @@
 var nmbug_server = 'http://localhost:5000';
 
 nmbug = {
-	show: function (message_id) {
+	show: function (message_id, frame) {
 		var _this = this;
+		if (frame === undefined) {
+			frame = window;
+		}
 		this._get_available_tags(function (available_tags) {
 			_this._get_tags(
 				message_id,
-				_this._edit_tags.bind(_this, available_tags, message_id));
+				_this._edit_tags.bind(_this, frame, available_tags, message_id));
 		});
 	},
 	_get_available_tags: function (callback) {
@@ -48,9 +51,9 @@ nmbug = {
 		request.open('get', url, true);
 		request.send();
 	},
-	_edit_tags: function (available_tags, message_id, tags) {
-		if (document.createElement('dialog').show) {
-			this._x_edit_tags(available_tags, message_id, tags);
+	_edit_tags: function (frame, available_tags, message_id, tags) {
+		if (frame.document.createElement('dialog').show) {
+			this._x_edit_tags(frame, available_tags, message_id, tags);
 		} else {
 			var _this = this;
 			var needed = [];
@@ -77,12 +80,12 @@ nmbug = {
 					needed.splice(index, 1);
 				}
 				if (needed.length == 0) {
-					_this._x_edit_tags(available_tags, message_id, tags);
+					_this._x_edit_tags(frame, available_tags, message_id, tags);
 				}
 			}
 
 			function has_header (name) {
-				var nodes = document.head.childNodes;
+				var nodes = frame.document.head.childNodes;
 				for (var i = 0; i < nodes.length; i++) {
 					if (basename(nodes[i]) == name) {
 						return true;
@@ -93,44 +96,44 @@ nmbug = {
 
 			if (!has_header('dialog-polyfill.js')) {
 				needed.push('dialog-polyfill.js');
-				var script = document.createElement('script');
+				var script = frame.document.createElement('script');
 				script.type = 'text/javascript';
 				script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
 				script.onload = onload;
 				console.log('nmbug: loading dialog-polyfill.js');
-				document.head.appendChild(script);
+				frame.document.head.appendChild(script);
 			}
 
 			if (!has_header('dialog-polyfill.css')) {
 				needed.push('dialog-polyfill.css');
-				var link = document.createElement('link');
+				var link = frame.document.createElement('link');
 				link.rel = 'stylesheet';
 				link.type = 'text/css';
 				link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
 				link.onload = onload;
 				console.log('nmbug: loading dialog-polyfill.css');
-				document.head.appendChild(link);
+				frame.document.head.appendChild(link);
 			}
 		}
 	},
-	_x_edit_tags: function (available_tags, message_id, tags) {
-		var dialog = document.createElement('dialog');
-		if (!document.createElement('dialog').show) {
-			dialogPolyfill.registerDialog(dialog);
+	_x_edit_tags: function (frame, available_tags, message_id, tags) {
+		var dialog = frame.document.createElement('dialog');
+		if (!frame.document.createElement('dialog').show) {
+			frame.dialogPolyfill.registerDialog(dialog);
 		}
 
 		dialog.style.border = '1px solid rgba(0, 0, 0, 0.3)';
 		dialog.style.borderRadius = '6px';
 		dialog.style.boxShadow = '0 3px 7px rgba(0, 0, 0, 0.3)';
 
-		var content = document.createElement('p');
+		var content = frame.document.createElement('p');
 		content.innerHTML = 'Edit tags for ' + message_id;
 		dialog.appendChild(content);
 
-		var ul = document.createElement('ul');
+		var ul = frame.document.createElement('ul');
 		dialog.appendChild(ul);
 		for (var i = 0; i < available_tags.length; i++) {
-			var li = document.createElement('li');
+			var li = frame.document.createElement('li');
 			li.innerHTML = available_tags[i];
 			li.style.cursor = 'pointer';
 			if (tags.indexOf(available_tags[i]) >= 0) {
@@ -140,14 +143,14 @@ nmbug = {
 				this, message_id, available_tags[i], li);
 			ul.appendChild(li);
 		}
-		var close = document.createElement('button');
+		var close = frame.document.createElement('button');
 		close.innerHTML = 'Close';
 		close.onclick = function () {
 			dialog.close();
 		};
 		dialog.appendChild(close);
 
-		document.body.appendChild(dialog);
+		frame.document.body.appendChild(dialog);
 
 		dialog.show();
 	},
@@ -185,8 +188,11 @@ nmbug = {
 var _gmane_handler = {
 	regexp: /gmane[.]org/,
 	handle: function (callback) {
-		var article = this._get_article();
-		this._get_message_id(article, callback);
+		var frame = this._get_frame();
+		var article = this._article_from_url(frame.document.URL);
+		this._get_message_id(article, function (message_id) {
+			callback(message_id, frame);
+		});
 	},
 	_article_from_url: function (url) {
 		var regexp = new RegExp('http://article.gmane.org/([^/]+)/([0-9]+)');
@@ -196,16 +202,18 @@ var _gmane_handler = {
 			return {'group': match[1], 'id': parseInt(match[2])};
 		}
 	},
-	_get_article: function () {
-		var article = this._article_from_url(document.URL);
+	_get_frame: function () {
+		var frame = window;
+		var article = this._article_from_url(frame.document.URL);
 		var i = 0;
 		for (var i = 0; !article && i < window.frames.length; i++) {
-			article = this._article_from_url(window.frames[i].document.URL);
+			frame = window.frames[i];
+			article = this._article_from_url(frame.document.URL);
 		}
 		if (!article) {
 			throw "Cannot extract an article from Gmane's " + document.URL;
 		}
-		return article;
+		return frame;
 	},
 	_get_message_id: function (article, callback) {
 		var url = [
