@@ -58,6 +58,10 @@ nmbug = {
 			dialogPolyfill.registerDialog(dialog);
 		}
 
+		dialog.style.border = '1px solid rgba(0, 0, 0, 0.3)';
+		dialog.style.borderRadius = '6px';
+		dialog.style.boxShadow = '0 3px 7px rgba(0, 0, 0, 0.3)';
+
 		var content = document.createElement('p');
 		content.innerHTML = 'Edit tags for ' + message_id;
 		dialog.appendChild(content);
