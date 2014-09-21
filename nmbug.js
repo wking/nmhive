@@ -2,7 +2,7 @@ var nmbug_server = 'http://localhost:5000';
 
 nmbug = {
 	show: function (message_id) {
-		this._get_tags(message_id, this._edit_tags.bind(this));
+		this._get_tags(message_id, this._edit_tags.bind(this, message_id));
 	},
 	_get_tags: function (message_id, callback) {
 		var url = [
@@ -16,7 +16,7 @@ nmbug = {
 			if (this.status == 200) {
 				var tags = JSON.parse(this.response);
 				console.log('nmbug: got tags', tags);
-				callback(message_id, tags);
+				callback(tags);
 			} else {
 				throw 'Error fetching ' + url + ' (status ' + this.status + ')';
 			}
