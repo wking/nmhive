@@ -1,6 +1,6 @@
 {
 	"name": "nmhive",
-	"description": "Distributed mail tagging with nmbug.",
+	"description": "Distributed bookmarklet/server pair for tagging mail with nmbug.",
 	"version": "0.1.0",
 	"license": "BSD-2-Clause",
 	"homepage": "https://github.com/wking/nmhive",
