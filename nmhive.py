@@ -10,6 +10,7 @@ import flask_cors
 
 
 app = flask.Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
 flask_cors.CORS(app)
 
 
