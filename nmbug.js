@@ -2,7 +2,31 @@ var nmbug_server = 'http://localhost:5000';
 
 nmbug = {
 	show: function (message_id) {
-		this._get_tags(message_id, this._edit_tags.bind(this, message_id));
+		var _this = this;
+		this._get_available_tags(function (available_tags) {
+			_this._get_tags(
+				message_id,
+				_this._edit_tags.bind(_this, available_tags, message_id));
+		});
+	},
+	_get_available_tags: function (callback) {
+		var url = [
+			nmbug_server,
+			'tags',
+			].join('/');
+		console.log('nmbug: get available tags from ' + url);
+		var request = new XMLHttpRequest();
+		request.onload = function () {
+			if (this.status == 200) {
+				var available_tags = JSON.parse(this.response);
+				console.log('nmbug: got available tags', available_tags);
+				callback(available_tags);
+			} else {
+				throw 'Error fetching ' + url + ' (status ' + this.status + ')';
+			}
+		};
+		request.open('get', url, true);
+		request.send();
 	},
 	_get_tags: function (message_id, callback) {
 		var url = [
@@ -24,9 +48,9 @@ nmbug = {
 		request.open('get', url, true);
 		request.send();
 	},
-	_edit_tags: function (message_id, tags) {
+	_edit_tags: function (available_tags, message_id, tags) {
 		if (document.createElement('dialog').show) {
-			this._x_edit_tags(message_id, tags);
+			this._x_edit_tags(available_tags, message_id, tags);
 		} else {
 			var _this = this;
 			var dialog_polyfill_loaded = 0;
@@ -34,7 +58,7 @@ nmbug = {
 			function onload () {
 				dialog_polyfill_loaded++;
 				if (dialog_polyfill_loaded == 2) {
-					_this._x_edit_tags(message_id, tags);
+					_this._x_edit_tags(available_tags, message_id, tags);
 				}
 			}
 
@@ -52,7 +76,7 @@ nmbug = {
 			document.head.appendChild(link);
 		}
 	},
-	_x_edit_tags: function (message_id, tags) {
+	_x_edit_tags: function (available_tags, message_id, tags) {
 		var dialog = document.createElement('dialog');
 		if (!document.createElement('dialog').show) {
 			dialogPolyfill.registerDialog(dialog);
@@ -68,9 +92,12 @@ nmbug = {
 
 		var ul = document.createElement('ul');
 		dialog.appendChild(ul);
-		for (var i = 0; i < tags.length; i++) {
+		for (var i = 0; i < available_tags.length; i++) {
 			var li = document.createElement('li');
-			li.innerHTML = tags[i];
+			li.innerHTML = available_tags[i];
+			if (tags.indexOf(available_tags[i]) >= 0) {
+				li.style.backgroundColor = 'lime';
+			}
 			ul.appendChild(li);
 		}
 		var close = document.createElement('button');
