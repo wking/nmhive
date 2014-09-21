@@ -115,7 +115,33 @@ nmbug = {
 		dialog.show();
 	},
 	_toggle_tag: function (message_id, tag, li) {
-		alert('toggle ' + tag + ' for ' + message_id);
+		var prefix;
+		if (li.style.backgroundColor == 'lime') {
+			prefix = '-';  /* unset */
+			li.style.backgroundColor = null;
+		} else {
+			prefix = '+';  /* set */
+			li.style.backgroundColor = 'lime';
+		}
+		var url = [
+			nmbug_server,
+			'mid',
+			encodeURIComponent(message_id),
+			].join('/');
+		console.log('nmbug: alter tags via ' + url);
+		var request = new XMLHttpRequest();
+		request.onload = function () {
+			if (this.status == 200) {
+				var tags = JSON.parse(this.response);
+				console.log('nmbug: got tags', tags);
+			} else {
+				throw 'Error posting to ' + url + ' (status ' + this.status + ')';
+			}
+		};
+		request.open('post', url, true);
+		request.setRequestHeader(
+			'Content-Type', 'application/json; charset=UTF-8');
+		request.send(JSON.stringify([prefix + tag]));
 	},
 };
 
