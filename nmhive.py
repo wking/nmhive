@@ -2,31 +2,32 @@
 
 import json
 import mailbox
+import os
 import tempfile
 import urllib.request
 
 import flask
 import flask_cors
+import notmuch
 
 
 app = flask.Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 flask_cors.CORS(app)
 
-
-_AVAILABLE_TAGS = {
-    'bug',
-    'needs-review',
-    'obsolete',
-    'patch',
-    }
+TAG_PREFIX = os.getenv('NMBPREFIX', 'notmuch::')
+NOTMUCH = None
 _TAGS = {}
 
 
 @app.route('/tags', methods=['GET'])
 def tags():
+    tags = set()
+    for t in NOTMUCH.get_all_tags():
+        if t.startswith(TAG_PREFIX):
+            tags.add(t[len(TAG_PREFIX):])
     return flask.Response(
-        response=json.dumps(sorted(_AVAILABLE_TAGS)),
+        response=json.dumps(sorted(tags)),
         mimetype='application/json')
 
 
@@ -76,5 +77,7 @@ def gmane_message_id(group, article):
 
 
 if __name__ == '__main__':
-    app.debug = True
+    NOTMUCH = notmuch.Database(
+        path=None,
+        mode=notmuch.Database.MODE.READ_WRITE)
     app.run(host='0.0.0.0')
