@@ -13,7 +13,20 @@ app = flask.Flask(__name__)
 flask_cors.CORS(app)
 
 
+_AVAILABLE_TAGS = {
+    'bug',
+    'needs-review',
+    'obsolete',
+    'patch',
+    }
 _TAGS = {}
+
+
+@app.route('/tags', methods=['GET'])
+def tags():
+    return flask.Response(
+        response=json.dumps(sorted(_AVAILABLE_TAGS)),
+        mimetype='application/json')
 
 
 @app.route('/mid/<message_id>', methods=['GET', 'POST'])
