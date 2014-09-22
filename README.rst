@@ -39,6 +39,46 @@ __ Python_
 Point your users to the served ``index.html`` so they can get the
 bookmarklet and read the instructions for using it.
 
+Endpoints
+=========
+
+The nmhive server provides the following endpoints for use by the
+bookmarklet (or other tools):
+
+``GET /tags``
+  Returns the tags that are already stored in the nmbug database as a
+  JSON array.  Instead of requiring admins to configure a list of
+  available tags, we just assume all the tags are in use (and that no
+  non-standard tags are in use) under the ``NMBPREFIX``.
+
+``GET /mid/<message-id>``
+  Returns tags associated with a particular message as a JSON array.
+  If the given Message-ID isn't in the notmuch database, returns
+  a 404.
+
+``POST /mid/<message-id>``
+  Updates the tags associated with a particular message.  The posted
+  data should be a JSON array of tag-names with a prefix indicating
+  the desired change.  Use ``+`` to add a tag and ``-`` to remove a
+  tag.  For example::
+
+    $ curl -XPOST -H 'Content-Type: application/json' -d '["+obsolete", "-needs-review"]' http://localhost:5000/mid/e630b6763e9d0771718afee41ea15b29bb4a1de8.1409935538.git.wking@tremily.us
+    ["obsolete", "patch"]
+
+	Adding an already associated tag and removing an already
+	unassociated tag are both no-ops.  Returns the updated tags as a
+	JSON array.  If the given Message-ID isn't in the notmuch database,
+	returns a 404.
+
+``GET /gmane/<group>/<article>``
+  Returns the article's Message-ID at ``text/plain``.  For example to
+  get the ``Message-ID`` of `this article`__ is::
+
+    $ curl -XGET http://localhost:5000/gmane/gmane.mail.notmuch.general/19007
+    e630b6763e9d0771718afee41ea15b29bb4a1de8.1409935538.git.wking@tremily.us
+
+__ `Gmane Python nmbug v4`_
+
 
 .. _nmbug: http://notmuchmail.org/nmbug/
 .. _notmuch: http://notmuchmail.org/
@@ -48,3 +88,4 @@ bookmarklet and read the instructions for using it.
 .. _Nginx: http://nginx.org/
 .. _Python: https://www.python.org/
 .. _http.server: https://docs.python.org/3/library/http.server.html
+.. _Gmane Python nmbug v4: http://article.gmane.org/gmane.mail.notmuch.general/19007
