@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Serve a JSON API for getting/setting notmuch tags with nmbug commits."""
+
 import json
 import mailbox
 import os
@@ -99,4 +101,16 @@ def gmane_message_id(group, article):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '-H', '--host', default='127.0.0.1',
+        help='The hostname to listen on.')
+    parser.add_argument(
+        '-p', '--port', type=int, default=5000,
+        help='The port to listen on.')
+
+    args = parser.parse_args()
+
+    app.run(host=args.host, port=args.port)
