@@ -105,6 +105,8 @@ nmbug = {
 		dialog.style.border = '1px solid rgba(0, 0, 0, 0.3)';
 		dialog.style.borderRadius = '6px';
 		dialog.style.boxShadow = '0 3px 7px rgba(0, 0, 0, 0.3)';
+		dialog.style.marginLeft = '10em';
+		dialog.style.marginRight = '10em';
 
 		var content = frame.document.createElement('p');
 		content.innerHTML = 'Edit tags for ' + message_id;
