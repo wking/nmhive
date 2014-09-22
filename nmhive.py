@@ -112,7 +112,11 @@ if __name__ == '__main__':
     parser.add_argument(
         '-p', '--port', type=int, default=5000,
         help='The port to listen on.')
+    parser.add_argument(
+        '-d', '--debug', type=bool, default=False,
+        help='Run Flask in debug mode (e.g. show errors).')
 
     args = parser.parse_args()
 
+    app.debug = args.debug
     app.run(host=args.host, port=args.port)
