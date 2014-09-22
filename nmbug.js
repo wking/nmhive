@@ -110,18 +110,19 @@ nmbug = {
 		content.innerHTML = 'Edit tags for ' + message_id;
 		dialog.appendChild(content);
 
-		var ul = frame.document.createElement('ul');
-		dialog.appendChild(ul);
+		var tag_list = frame.document.createElement('p');
+		dialog.appendChild(tag_list);
 		for (var i = 0; i < available_tags.length; i++) {
-			var li = frame.document.createElement('li');
-			li.innerHTML = available_tags[i];
-			li.style.cursor = 'pointer';
+			var tag = frame.document.createElement('a');
+			tag.innerHTML = available_tags[i];
+			tag.style.cursor = 'pointer';
 			if (tags.indexOf(available_tags[i]) >= 0) {
-				li.style.backgroundColor = 'lime';
+				tag.style.backgroundColor = 'lime';
 			}
-			li.onclick = this._toggle_tag.bind(
-				this, message_id, available_tags[i], li);
-			ul.appendChild(li);
+			tag.onclick = this._toggle_tag.bind(
+				this, message_id, available_tags[i], tag);
+			tag_list.appendChild(tag);
+			tag_list.appendChild(frame.document.createTextNode(' '));
 		}
 		var close = frame.document.createElement('button');
 		close.innerHTML = 'Close';
@@ -134,14 +135,14 @@ nmbug = {
 
 		dialog.show();
 	},
-	_toggle_tag: function (message_id, tag, li) {
+	_toggle_tag: function (message_id, tag, element) {
 		var prefix;
-		if (li.style.backgroundColor == 'lime') {
+		if (element.style.backgroundColor == 'lime') {
 			prefix = '-';  /* unset */
-			li.style.backgroundColor = null;
+			element.style.backgroundColor = null;
 		} else {
 			prefix = '+';  /* set */
-			li.style.backgroundColor = 'lime';
+			element.style.backgroundColor = 'lime';
 		}
 		var url = [
 			nmbug_server,
