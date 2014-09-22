@@ -130,7 +130,7 @@ nmbug = {
 		};
 		dialog.appendChild(close);
 
-		frame.document.body.appendChild(dialog);
+		frame.document.body.insertBefore(dialog, frame.document.body.firstChild);
 
 		dialog.show();
 	},
