@@ -47,6 +47,8 @@ def _message_tags(message):
 def message_id_tags(message_id):
     if flask.request.method == 'POST':
         changes = flask.request.get_json()
+        if not changes:
+            return flask.Response(status=400)
         database = notmuch.Database(
             path=NOTMUCH_PATH,
             mode=notmuch.Database.MODE.READ_WRITE)
