@@ -3,6 +3,16 @@
 	<head>
 		<meta charset="UTF-8"/>
 
+		<style media="screen" type="text/css">
+			img {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+				border: 2px solid black;
+				border-radius: 6px;
+			}
+		</style>
+
 		<script type="text/javascript">
 			function load_bookmarklet(id, source) {
 				var request = new XMLHttpRequest();
@@ -20,6 +30,20 @@
 	<body onload="load_bookmarklet('nmbug', 'nmbug.js');">
 		<p>
 			This is the <a id="nmbug">nmbug</a> bookmarklet.
+		</p>
+		<p>
+			To use it, just copy the link into your bookmarks, and start
+			browsing <a href="http://gmane.org/">Gmane</a>.  When you want
+			to view or edit tags on the message you're viewing, click on the
+			bookmarklet.  It will pop up a dialog with the list of available
+			tags with the currently selected tags highlighted:
+		</p>
+		<img src="static/article.png"/>
+		<p>
+			Clicking on any tag will toggle its selection.  For each tag
+			change, the bookmarklet will <code>POST</code> to
+			the <a href="https://github.com/wking/nmhive">nmhive</a> server,
+			which commits the change to its nmbug database.
 		</p>
 	</body>
 </html>
