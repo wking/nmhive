@@ -65,10 +65,10 @@ bookmarklet (or other tools):
     $ curl -XPOST -H 'Content-Type: application/json' -d '["+obsolete", "-needs-review"]' http://localhost:5000/mid/e630b6763e9d0771718afee41ea15b29bb4a1de8.1409935538.git.wking@tremily.us
     ["obsolete", "patch"]
 
-	Adding an already associated tag and removing an already
-	unassociated tag are both no-ops.  Returns the updated tags as a
-	JSON array.  If the given Message-ID isn't in the notmuch database,
-	returns a 404.
+  Adding an already associated tag and removing an already
+  unassociated tag are both no-ops.  Returns the updated tags as a
+  JSON array.  If the given Message-ID isn't in the notmuch database,
+  returns a 404.
 
 ``GET /gmane/<group>/<article>``
   Returns the article's Message-ID as ``text/plain``.  For example,
