@@ -20,6 +20,9 @@ Launch the server with something like::
    * Running on http://0.0.0.0:5000/
   …
 
+Use nmbug's usual ``NMBGIT`` and ``NMBPREFIX`` environment variables
+to configure the nmbug repository used by nmhive.
+
 You can kill the server whenever you like (e.g. via ``ctrl+c``)
 without worrying about corrupting your local notmuch or nmbug
 databases.
