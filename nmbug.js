@@ -52,68 +52,48 @@ nmbug = {
 		request.send();
 	},
 	_edit_tags: function (frame, available_tags, message_id, tags) {
-		if (frame.document.createElement('dialog').show) {
+		var have_dialog_polyfill;
+		try {
+			have_dialog_polyfill = frame.dialogPolyfill !== undefined;
+		} catch (error) {
+			if (error.name == 'ReferenceError') {
+				have_dialog_polyfill = false;
+			}
+		}
+		if (frame.document.createElement('dialog').show || have_dialog_polyfill) {
 			this._x_edit_tags(frame, available_tags, message_id, tags);
 		} else {
+			var script = frame.document.createElement('script');
+			script.type = 'text/javascript';
+			script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
+			script.async = false;
+			console.log('nmbug: loading dialog-polyfill.js');
+			frame.document.head.appendChild(script);
+
+			var link = frame.document.createElement('link');
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
+			link.async = false;
+			console.log('nmbug: loading dialog-polyfill.css');
+			frame.document.head.appendChild(link);
+
 			var _this = this;
-			var needed = [];
-
-			function basename (element) {
-				var url;
-				if (!element.tagName) {
-					return;
-				} else if (element.tagName.toLowerCase() == 'script') {
-					url = element.src;
-				} else if (element.tagName.toLowerCase() == 'link') {
-					url = element.href;
-				} else {
-					return;
-				}
-				return url.replace(/.*\//, '');
-			}
-
-			function onload () {
-				var name = basename(this);
-				console.log('nmbug: loaded ' + name, this);
-				var index = needed.indexOf(name);
-				if (index !== -1) {
-					needed.splice(index, 1);
-				}
-				if (needed.length == 0) {
-					_this._x_edit_tags(frame, available_tags, message_id, tags);
-				}
-			}
-
-			function has_header (name) {
-				var nodes = frame.document.head.childNodes;
-				for (var i = 0; i < nodes.length; i++) {
-					if (basename(nodes[i]) == name) {
-						return true;
+			function edit_tags_after_dialog_polyfill () {
+				try {
+					have_dialog_polyfill = frame.dialogPolyfill !== undefined;
+					console.log('have dialogPolyfill');
+					window.setTimeout(
+							_this._x_edit_tags.bind(_this), 200,
+							frame, available_tags, message_id, tags);
+				} catch (error) {
+					if (error.name == 'ReferenceError') {
+						console.log('waiting for dialogPolyfill');
+						window.setTimeout(edit_tags_after_dialog_polyfill, 200);
 					}
 				}
-				return false;
 			}
-
-			if (!has_header('dialog-polyfill.js')) {
-				needed.push('dialog-polyfill.js');
-				var script = frame.document.createElement('script');
-				script.type = 'text/javascript';
-				script.src = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.js';
-				script.onload = onload;
-				console.log('nmbug: loading dialog-polyfill.js');
-				frame.document.head.appendChild(script);
-			}
-
-			if (!has_header('dialog-polyfill.css')) {
-				needed.push('dialog-polyfill.css');
-				var link = frame.document.createElement('link');
-				link.rel = 'stylesheet';
-				link.type = 'text/css';
-				link.href = nmbug_server + '/static/dialog-polyfill/dialog-polyfill.css';
-				link.onload = onload;
-				console.log('nmbug: loading dialog-polyfill.css');
-				frame.document.head.appendChild(link);
-			}
+			edit_tags_after_dialog_polyfill();
 		}
 	},
 	_x_edit_tags: function (frame, available_tags, message_id, tags) {
