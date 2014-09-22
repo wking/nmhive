@@ -53,8 +53,7 @@ bookmarklet (or other tools):
 
 ``GET /mid/<message-id>``
   Returns tags associated with a particular message as a JSON array.
-  If the given Message-ID isn't in the notmuch database, returns
-  a 404.
+  Returns a 404 if the given Message-ID isn't in the notmuch database.
 
 ``POST /mid/<message-id>``
   Updates the tags associated with a particular message.  The posted
@@ -67,8 +66,8 @@ bookmarklet (or other tools):
 
   Adding an already associated tag and removing an already
   unassociated tag are both no-ops.  Returns the updated tags as a
-  JSON array.  If the given Message-ID isn't in the notmuch database,
-  returns a 404.
+  JSON array.  Returns a 404 if the given Message-ID isn't in the
+  notmuch database.
 
 ``GET /gmane/<group>/<article>``
   Returns the article's Message-ID as ``text/plain``.  For example,
