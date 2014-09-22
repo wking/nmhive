@@ -71,8 +71,8 @@ bookmarklet (or other tools):
 	returns a 404.
 
 ``GET /gmane/<group>/<article>``
-  Returns the article's Message-ID at ``text/plain``.  For example to
-  get the ``Message-ID`` of `this article`__ is::
+  Returns the article's Message-ID at ``text/plain``.  For example,
+  get the ``Message-ID`` of `this article`__ with::
 
     $ curl -XGET http://localhost:5000/gmane/gmane.mail.notmuch.general/19007
     e630b6763e9d0771718afee41ea15b29bb4a1de8.1409935538.git.wking@tremily.us
